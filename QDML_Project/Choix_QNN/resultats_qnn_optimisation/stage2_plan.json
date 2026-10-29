@@ -1,0 +1,34 @@
+{
+ "candidates": [
+  {
+   "cfg_id": "lr0.01_ep80_L1",
+   "LL_total": 1.383351731613419,
+   "not_converged": false,
+   "unstable": false
+  },
+  {
+   "cfg_id": "lr0.01_ep40_L1",
+   "LL_total": 1.386336037830055,
+   "not_converged": false,
+   "unstable": false
+  },
+  {
+   "cfg_id": "lr0.05_ep80_L1",
+   "LL_total": 1.3877394348997316,
+   "not_converged": false,
+   "unstable": false
+  }
+ ],
+ "configs": [
+  [
+   0.05,
+   120,
+   3
+  ]
+ ],
+ "seeds": [
+  1,
+  42,
+  123
+ ]
+}

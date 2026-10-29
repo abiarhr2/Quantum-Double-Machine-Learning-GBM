@@ -1,0 +1,28 @@
+{
+  "criterion": "lowest mean out-of-fold LL_total = LL_g + LL_m across seeds; failed/incomplete configurations excluded",
+  "source": "stage 2",
+  "seeds": [
+    1,
+    42,
+    123
+  ],
+  "best": {
+    "lr": 0.05,
+    "epochs": 120,
+    "layers": 3,
+    "n_qubits": 12,
+    "n_params": 108,
+    "cfg_id": "lr0.05_ep120_L3",
+    "LL_total_mean": 1.141393602060487,
+    "LL_total_sd": 0.019466032121398264,
+    "LL_g_mean": 0.6262720803199123,
+    "LL_m_mean": 0.5151215217405748,
+    "AUC_g_mean": 0.7024096385542168,
+    "AUC_m_mean": 0.4919066440805571,
+    "not_converged_frac": 0.0,
+    "unstable_frac": 0.0,
+    "edema_vs_prevalence": "does NOT improve on prevalence-only (edema)",
+    "total_vs_mlp": "does NOT improve on the optimised MLP (LL_total)",
+    "parsimonious_alternative_within_1sd": "lr0.05_ep120_L3"
+  }
+}
