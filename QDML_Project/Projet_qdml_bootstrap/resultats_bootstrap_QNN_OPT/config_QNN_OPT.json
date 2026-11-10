@@ -1,0 +1,16 @@
+{
+  "model": "QNN_OPT",
+  "n_qubits": 12,
+  "n_layers": 3,
+  "epochs": 120,
+  "lr": 0.05,
+  "train_clip": 1e-06,
+  "n_folds": 5,
+  "propensity_clip": 0.01,
+  "boot_seed": 0,
+  "random_state": 42,
+  "n": 183,
+  "sklearn": "1.9.1",
+  "pennylane": "0.45.1",
+  "fold_hash": "a56f4caa2b1e"
+}

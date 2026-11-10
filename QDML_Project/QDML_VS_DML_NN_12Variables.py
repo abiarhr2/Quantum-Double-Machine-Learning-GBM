@@ -1,4 +1,6 @@
 """
+NOO
+
 DML QUANTIQUE (QNN) VS QML CLASIQUE (NN) - sur les memes variables
 
 ================================================================================

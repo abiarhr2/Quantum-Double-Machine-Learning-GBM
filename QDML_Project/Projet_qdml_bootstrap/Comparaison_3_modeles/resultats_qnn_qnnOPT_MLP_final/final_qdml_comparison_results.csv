@@ -1,0 +1,7 @@
+﻿type,comparison_or_model,theta_original,se_analytique,ci95_analytique_lower,ci95_analytique_upper,p_analytique,bootstrap_mean,bootstrap_median,bootstrap_se,bootstrap_ci95_lower,bootstrap_ci95_upper,bootstrap_p,bootstrap_valid_n,se_analytique_mean_boot,original_runtime_s,mean_boot_iteration_s,total_boot_compute_h,original_difference
+model,MLP,0.1918,0.0779,0.0391,0.3446,0.0138,0.2,0.2018,0.0821,0.0442,0.3624,0.016,1000,0.0751,1.0566,,,
+model,"Original QNN (1 layer, 40 epochs)",0.0382,0.0742,-0.1072,0.1836,0.6069,0.0373,0.0358,0.0741,-0.1121,0.1868,0.6114,1000,0.0736,394.436,,,
+model,"Optimized QNN (3 layers, 120 epochs)",0.1544,0.0836,-0.0096,0.3183,0.0649,0.1222,0.1277,0.0865,-0.0547,0.2911,0.1718,1000,0.0819,2668.4669,2336.2941,648.9706,
+paired_difference,Optimized QNN - MLP,,,,,,-0.0778,-0.0726,0.0869,-0.2434,0.0802,0.3936,1000,,,,,-0.0374
+paired_difference,Optimized QNN - Original QNN,,,,,,0.0849,0.0872,0.0661,-0.052,0.2147,0.2078,1000,,,,,0.1162
+paired_difference,Original QNN - MLP,,,,,,-0.1627,-0.1634,0.082,-0.323,0.0022,0.0539,1000,,,,,-0.1536

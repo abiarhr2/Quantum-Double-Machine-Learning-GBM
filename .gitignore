@@ -1,0 +1,42 @@
+# Python caches and tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.coverage
+.coverage.*
+htmlcov/
+
+# Local virtual environments
+.venv/
+venv/
+venv_qdml/
+ENV/
+
+# Temporary files and editor backups
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Runtime logs and scheduler output
+*.log
+logs/
+slurm-*.out
+slurm-*.err
+
+# Bulky generated artifacts; retain CSV/JSON results and provenance
+**/results/**/checkpoints/
+**/resultats_*/**/checkpoints/
+**/results/**/tensorboard/
+**/resultats_*/**/tensorboard/
+events.out.tfevents.*
+
+# Generated local project archive
+/QDML_Project.zip
+
+# Medical workbook: exclude at every directory level
+GBM_GBS.xlsx

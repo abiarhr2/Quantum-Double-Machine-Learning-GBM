@@ -6,7 +6,7 @@ BOOTSTRAP COMPLET APPARIÉ (approche A)
   1. on rééchantillonne les patients (avec remise) -> MÊME échantillon pour NN et QNN
   2. cross-fitting : on réentraîne le MLP, puis le QNN, sur cet échantillon
   3. on calcule les résidus et theta (formule DML identique pour les deux)
-On répète B fois (B = 100 pour commencer, 1000 ensuite) -> distribution des theta*.
+On répète B fois (B = 1000 pour commencer) -> distribution des theta*.
 
 Utilisation :
   python QDML_bootstrap_paired.py                       # estimation initiale + itérations 0..99 + analyse
@@ -14,7 +14,6 @@ Utilisation :
   python QDML_bootstrap_paired.py --start 50 --end 100 --skip-original    # un autre worker en parallèle
   python QDML_bootstrap_paired.py --analyse-only        # fusionne les fichiers et fait l'analyse
 
-Légende : [AJOUTÉ] [MODIFIÉ] [SUPPRIMÉ] 
 """
 
 import warnings
@@ -29,7 +28,7 @@ import pandas as pd
 from scipy.stats import norm
 from sklearn.model_selection import StratifiedKFold, StratifiedGroupKFold
 from sklearn.neural_network import MLPClassifier
-from sklearn.pipeline import make_pipeline          # [AJOUTÉ] standardisation à l'intérieur des plis
+from sklearn.pipeline import make_pipeline          # standardisation à l'intérieur des plis
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 import matplotlib
@@ -45,18 +44,18 @@ from pennylane import numpy as pnp
 RANDOM_STATE = 42
 N_FOLDS = 5
 PROPENSITY_CLIP = 0.01
-BOOT_SEED = 0              # [AJOUTÉ] graine des rééchantillonnages (itération b -> graine BOOT_SEED + b)
-# [AJOUTÉ] configuration du MLP, choisie sur le log-loss hors-échantillon (30 graines, comparaison appariée)
-MLP_HIDDEN = 32            # [MODIFIÉ] avant : 16
-MLP_ALPHA = 10.0           # [MODIFIÉ] avant : 0.01
-MLP_MAX_ITER = 500         # [MODIFIÉ] avant : 2000 (valeur utilisée dans le test de sélection)
-OUT_DIR = "resultats_bootstrap"   # [AJOUTÉ] dossier de sortie
+BOOT_SEED = 0              # graine des rééchantillonnages (itération b -> graine BOOT_SEED + b)
+# configuration du MLP, choisie sur le log-loss hors-échantillon (30 graines, comparaison appariée)
+MLP_HIDDEN = 32
+MLP_ALPHA = 10.0
+MLP_MAX_ITER = 500         # (valeur utilisée dans le test de sélection)
+OUT_DIR = "resultats_bootstrap"   # dossier de sortie
 os.makedirs(OUT_DIR, exist_ok=True)
 
-# [AJOUTÉ] arguments de ligne de commande
+# arguments de ligne de commande
 parser = argparse.ArgumentParser()
 parser.add_argument("--start", type=int, default=0, help="première itération (incluse)")
-parser.add_argument("--end", type=int, default=100, help="dernière itération (exclue)")
+parser.add_argument("--end", type=int, default=1000, help="dernière itération (exclue)")
 parser.add_argument("--skip-original", action="store_true",
                     help="ne pas recalculer l'estimation sur les données originales")
 parser.add_argument("--analyse-only", action="store_true",
@@ -91,14 +90,14 @@ missing = [c for c in SELECTED_RADIO if c not in df.columns]
 if missing:
     raise ValueError(f"Colonnes absentes du fichier : {missing}")
 
-# [SUPPRIMÉ] Age et variables cliniques (Sex, Localization, Necrosis) : seulement les 12 radiomiques
-# [MODIFIÉ] NaN -> médiane (avant : 0)
+# Age et variables cliniques (Sex, Localization, Necrosis) : seulement les 12 radiomiques
+# NaN -> médiane
 X = df[SELECTED_RADIO].apply(pd.to_numeric, errors="coerce")
 X = X.fillna(X.median())
 
 Y = df["Y"].values
 D = df["D"].values
-# [MODIFIÉ] plus de standardisation globale : elle est faite dans chaque pli (Pipeline du MLP).
+# plus de standardisation globale : elle est faite dans chaque pli (Pipeline du MLP).
 # Le QNN a son propre MinMaxScaler ajusté sur Xtr, insensible à une standardisation préalable.
 Xs = X.values
 n = len(Y)
@@ -110,7 +109,7 @@ print(f"traitement : {D.sum()} avec oedème / {n - D.sum()} sans oedème\n")
 # 2. Modèle de nuisance classique : MLP
 # ===========================
 def classical_nn_fit_predict(Xtr, ytr, Xte, seed=RANDOM_STATE):
-    # [MODIFIÉ] Pipeline : le StandardScaler est ajusté sur Xtr seulement (pas de fuite),
+    # Pipeline : le StandardScaler est ajusté sur Xtr seulement (pas de fuite),
     #           puis appliqué à Xte. early_stopping désactivé (instable avec 22 patients sans oedème).
     clf = make_pipeline(
         StandardScaler(),
@@ -119,7 +118,7 @@ def classical_nn_fit_predict(Xtr, ytr, Xte, seed=RANDOM_STATE):
             activation="relu",
             alpha=MLP_ALPHA,           # régularisation L2 forte
             max_iter=MLP_MAX_ITER,
-            early_stopping=False,      # [MODIFIÉ] avant : True
+            early_stopping=False,
             random_state=seed,
         ),
     )
@@ -169,9 +168,9 @@ def quantum_nn_fit_predict(Xtr, ytr, Xte, seed=RANDOM_STATE):
 # ===========================
 # 4. DML générique
 # ===========================
-# [MODIFIÉ] paramètre `groups` : dans un échantillon bootstrap, les copies d'un même patient
+# paramètre `groups` : dans un échantillon bootstrap, les copies d'un même patient
 #           restent dans le même pli (évite la fuite de données)
-# [MODIFIÉ] n = len(Y) local ; print corrigé ; paramètre verbose
+# n = len(Y) local ; paramètre verbose
 def run_dml(nuisance_fit_predict, Xs, Y, D, n_folds=N_FOLDS, SEED=RANDOM_STATE,
             clip=PROPENSITY_CLIP, label="", groups=None, verbose=True):
     n = len(Y)
@@ -208,10 +207,10 @@ def run_dml(nuisance_fit_predict, Xs, Y, D, n_folds=N_FOLDS, SEED=RANDOM_STATE,
 
     return {"theta": theta, "se": se, "z": z, "pval": pval, "ci": ci}
 
-MODELS = {"NN": classical_nn_fit_predict, "QNN": quantum_nn_fit_predict}   # [AJOUTÉ]
+MODELS = {"NN": classical_nn_fit_predict, "QNN": quantum_nn_fit_predict}
 
 # ===========================
-# 5. [AJOUTÉ] Estimation sur les données originales (point de référence)
+# 5. Estimation sur les données originales (point de référence)
 # ===========================
 ORIG_PATH = os.path.join(OUT_DIR, "resultats_originaux.csv")
 
@@ -229,7 +228,7 @@ if not args.analyse_only and not args.skip_original:
     pd.DataFrame(rows).set_index("Modèle").round(4).to_csv(ORIG_PATH)
 
 # ===========================
-# 6. [AJOUTÉ] Bootstrap complet apparié (NN et QNN sur les mêmes échantillons)
+# 6. Bootstrap complet apparié (NN et QNN sur les mêmes échantillons)
 # ===========================
 def paired_bootstrap(models, Xs, Y, D, start, end, seed=BOOT_SEED, n_folds=N_FOLDS):
     """Itérations start..end-1. Reprend automatiquement après une interruption."""
@@ -270,7 +269,7 @@ if not args.analyse_only:
     paired_bootstrap(MODELS, Xs, Y, D, args.start, args.end)
 
 # ===========================
-# 7. [AJOUTÉ] Analyse : fusion des fichiers, SE, IC percentile, p-value, histogrammes
+# 7. Analyse : fusion des fichiers, SE, IC percentile, p-value, histogrammes
 # ===========================
 def summarize(thetas):
     thetas = np.asarray(thetas)
@@ -333,6 +332,3 @@ plt.close(fig)
 
 print(f"\nFichiers dans {OUT_DIR}/ : resume_bootstrap.csv, thetas_bootstrap_fusionnes.csv, "
       f"bootstrap_histogrammes.png, resultats_originaux.csv")
-
-# [SUPPRIMÉ] section "Diagnostics des modèles de nuisance" (AUC, log-loss, J, référence prévalence)
-# [SUPPRIMÉ] forest plot et ancien tableau de comparaison (remplacés par l'analyse bootstrap)
